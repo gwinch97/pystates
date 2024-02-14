@@ -6,10 +6,10 @@ Created on Mon Feb  6 10:52:20 2023
 """
 
 import numpy as np
-import pickle
-import lzma
 from tqdm import tqdm,trange
-import os
+from scipy.sparse.csgraph import laplacian
+
+
 
 def claplacian(M,norm=True):
     if norm == True:
@@ -23,17 +23,18 @@ def eigenspectrum(L):
     eigvals = np.real(np.linalg.eig(L)[0])
     return -np.sort(-eigvals)
 
-def all_spectrums(A_dict):
+def all_spectrums(A_dict,norm=True):
     dict_keys = list(A_dict.keys())
     eigenspectrums = np.zeros((np.shape(A_dict[dict_keys[0]])[0], len(dict_keys)))
     i = 0
     for key in tqdm(dict_keys):
-        L = claplacian(A_dict[key],norm=False)
+        L = laplacian(A_dict[key],normed=norm)
         eigenspectrums[:,i] = eigenspectrum(L)
         i+=1
     return eigenspectrums
     
 def snapshot_dist(eigenspectrums,norm=True):
+    # Old implementation, now use scipy.spatial.distance.cdist
     N = np.shape(eigenspectrums)[1]
     dist = np.zeros((N,N))
     for i in trange(N):
@@ -45,4 +46,5 @@ def snapshot_dist(eigenspectrums,norm=True):
                 else:
                     dist[i,j] = 0
                     
-    return dist
+    return dist  
+    
